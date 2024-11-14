@@ -1,0 +1,150 @@
+
+
+import React, { useState, useEffect } from 'react';
+const App = () => {
+  // State management
+  const [stations, setStations] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [user, setUser] = useState(null);
+
+  // Fetch data
+  useEffect(() => {
+    const fetchData = async () => {
+      // Fetch data from a backend API
+      const stationsResponse = await fetch('/api/stations');
+      setStations(await stationsResponse.json());
+
+      const bookingsResponse = await fetch('/api/bookings');
+      setBookings(await bookingsResponse.json());
+
+      const userResponse = await fetch('/api/user');
+      setUser(await userResponse.json());
+    };
+    fetchData();
+  }, []);
+
+  // Book a ticket
+  const bookTicket = async (booking) => {
+    const response = await fetch('/api/bookings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(booking),
+    });
+    setBookings([...bookings, await response.json()]);
+  };
+
+  // Update user profile
+  const updateProfile = async (updatedUser) => {
+    const response = await fetch('/api/user', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updatedUser),
+    });
+    setUser(await response.json());
+  };
+
+  return (
+    <div>
+      <header className="bg-gray-800 text-white p-4">
+        <h1 className="font-bold text-lg">Railway Ticket Booking</h1>
+        <nav>
+          <ul className="flex space-x-4">
+            <li><a href="#">Home</a></li>
+            <li><a href="#">Book Ticket</a></li>
+            <li><a href="#">My Tickets</a></li>
+            <li><a href="#">Profile</a></li>
+          </ul>
+        </nav>
+      </header>
+
+      <div className="p-6">
+        {/* Home Component */}
+        <div>
+          <h2 className="text-2xl font-bold mb-4">Welcome to Railway Ticket Booking</h2>
+          <p>This is the home page with general information about the service.</p>
+        </div>
+
+        {/* Booking Component */}
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold mb-4">Book Ticket</h2>
+          <div>
+            <label htmlFor="from">From:</label>
+            <select id="from" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+              {stations.map((station) => (
+                <option key={station.id} value={station.id}>{station.name}</option>
+              ))}
+            </select>
+            <label htmlFor="to">To:</label>
+            <select id="to" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+              {stations.map((station) => (
+                <option key={station.id} value={station.id}>{station.name}</option>
+              ))}
+            </select>
+            <label htmlFor="date">Date:</label>
+            <input type="date" id="date" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+            <label htmlFor="passengers">Passengers:</label>
+            <input type="number" id="passengers" min="1" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+            <button
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              onClick={() => bookTicket({
+                from: stations[0].id,
+                to: stations[1].id,
+                date: '2023-05-01',
+                passengers: 2,
+              })}
+            >
+              Book Ticket
+            </button>
+          </div>
+        </div>
+
+        {/* Tickets Component */}
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold mb-4">My Tickets</h2>
+          <div>
+            <ul>
+              {bookings.map((booking) => (
+                <li key={booking.id}>
+                  {booking.from} to {booking.to} on {booking.date} ({booking.passengers} passengers)
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Profile Component */}
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold mb-4">Profile</h2>
+          <div>
+            <label htmlFor="name">Name:</label>
+            <input
+              type="text"
+              id="name"
+              defaultValue={user?.name}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+            <label htmlFor="email">Email:</label>
+            <input
+              type="email"
+              id="email"
+              defaultValue={user?.email}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+            <button
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              onClick={() => updateProfile({ name: 'John Doe', email: 'john.doe@example.com' })}
+            >
+              Update Profile
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default App;
